@@ -17,6 +17,7 @@ package com.ryantenney.metrics.spring.config.annotation;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.ryantenney.metrics.spring.NamingStrategy;
 
 /**
  * Defines callback methods to customize the Java-based configuration
@@ -46,4 +47,5 @@ public interface MetricsConfigurer {
 	 */
 	HealthCheckRegistry getHealthCheckRegistry();
 
+	NamingStrategy getNamingStrategy();
 }

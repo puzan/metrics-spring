@@ -28,7 +28,8 @@
 
 	<bean id="metrics" class="com.ryantenney.metrics.spring.RegistryTest.CustomMetricRegistry" />
 	<bean id="health" class="com.ryantenney.metrics.spring.RegistryTest.CustomHealthCheckRegistry" />
+	<bean id="namingStrategy" class="com.ryantenney.metrics.spring.RegistryTest.CustomNamingStrategy" />
 
-	<metrics:annotation-driven metric-registry="metrics" health-check-registry="health" />
+	<metrics:annotation-driven metric-registry="metrics" health-check-registry="health" naming-strategy="namingStrategy" />
 
 </beans>

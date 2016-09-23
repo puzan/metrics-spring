@@ -15,9 +15,10 @@
  */
 package com.ryantenney.metrics.spring.config;
 
-import static org.springframework.beans.factory.config.BeanDefinition.ROLE_APPLICATION;
-import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
-
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.ryantenney.metrics.spring.DefaultNamingStrategy;
+import com.ryantenney.metrics.spring.MetricsBeanPostProcessorFactory;
 import org.springframework.aop.framework.ProxyConfig;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
@@ -28,9 +29,8 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
-import com.ryantenney.metrics.spring.MetricsBeanPostProcessorFactory;
+import static org.springframework.beans.factory.config.BeanDefinition.ROLE_APPLICATION;
+import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
 
 class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 
@@ -44,6 +44,11 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		String metricsBeanName = element.getAttribute("metric-registry");
 		if (!StringUtils.hasText(metricsBeanName)) {
 			metricsBeanName = registerComponent(parserContext, build(MetricRegistry.class, source, ROLE_APPLICATION));
+		}
+
+		String namingStrategyBeanName = element.getAttribute("naming-strategy");
+		if (!StringUtils.hasText(namingStrategyBeanName)) {
+			namingStrategyBeanName = registerComponent(parserContext, build(DefaultNamingStrategy.class, source, ROLE_APPLICATION));
 		}
 
 		String healthCheckBeanName = element.getAttribute("health-check-registry");
@@ -67,45 +72,53 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("exceptionMetered")
 					.addConstructorArgReference(metricsBeanName)
-					.addConstructorArgValue(proxyConfig));
+					.addConstructorArgValue(proxyConfig)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("metered")
 					.addConstructorArgReference(metricsBeanName)
-					.addConstructorArgValue(proxyConfig));
+					.addConstructorArgValue(proxyConfig)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("timed")
 					.addConstructorArgReference(metricsBeanName)
-					.addConstructorArgValue(proxyConfig));
+					.addConstructorArgValue(proxyConfig)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("counted")
 					.addConstructorArgReference(metricsBeanName)
-					.addConstructorArgValue(proxyConfig));
+					.addConstructorArgValue(proxyConfig)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("gaugeField")
-					.addConstructorArgReference(metricsBeanName));
+					.addConstructorArgReference(metricsBeanName)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("gaugeMethod")
-					.addConstructorArgReference(metricsBeanName));
+					.addConstructorArgReference(metricsBeanName)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("cachedGauge")
-					.addConstructorArgReference(metricsBeanName));
+					.addConstructorArgReference(metricsBeanName)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("metric")
-					.addConstructorArgReference(metricsBeanName));
+					.addConstructorArgReference(metricsBeanName)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
@@ -116,17 +129,20 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("legacyCounted")
 					.addConstructorArgReference(metricsBeanName)
-					.addConstructorArgValue(proxyConfig));
+					.addConstructorArgValue(proxyConfig)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("legacyCachedGauge")
-					.addConstructorArgReference(metricsBeanName));
+					.addConstructorArgReference(metricsBeanName)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		registerComponent(parserContext,
 				build(MetricsBeanPostProcessorFactory.class, source, ROLE_INFRASTRUCTURE)
 					.setFactoryMethod("legacyMetric")
-					.addConstructorArgReference(metricsBeanName));
+					.addConstructorArgReference(metricsBeanName)
+					.addConstructorArgReference(namingStrategyBeanName));
 
 		//@formatter:on
 

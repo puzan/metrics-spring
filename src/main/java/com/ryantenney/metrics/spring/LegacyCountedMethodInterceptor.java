@@ -15,17 +15,14 @@
  */
 package com.ryantenney.metrics.spring;
 
-import java.lang.reflect.Method;
-
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.ryantenney.metrics.annotation.Counted;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
 import org.springframework.util.ReflectionUtils.MethodFilter;
-
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
-import com.ryantenney.metrics.annotation.Counted;
 
 import static com.ryantenney.metrics.spring.AnnotationFilter.PROXYABLE_METHODS;
 
@@ -36,8 +33,10 @@ class LegacyCountedMethodInterceptor extends AbstractMetricMethodInterceptor<Cou
 	public static final Pointcut POINTCUT = new AnnotationMatchingPointcut(null, ANNOTATION);
 	public static final MethodFilter METHOD_FILTER = new AnnotationFilter(ANNOTATION, PROXYABLE_METHODS);
 
-	public LegacyCountedMethodInterceptor(final MetricRegistry metricRegistry, final Class<?> targetClass) {
-		super(metricRegistry, targetClass, ANNOTATION, METHOD_FILTER);
+	public LegacyCountedMethodInterceptor(final MetricRegistry metricRegistry,
+			final Class<?> targetClass,
+			NamingStrategy namingStrategy) {
+		super(metricRegistry, targetClass, ANNOTATION, METHOD_FILTER, namingStrategy);
 	}
 
 	@Override
@@ -58,16 +57,11 @@ class LegacyCountedMethodInterceptor extends AbstractMetricMethodInterceptor<Cou
 		return metricRegistry.counter(metricName);
 	}
 
-	@Override
-	protected String buildMetricName(Class<?> targetClass, Method method, Counted annotation) {
-		return Util.forCountedMethod(targetClass, method, annotation);
-	}
-
-	static AdviceFactory adviceFactory(final MetricRegistry metricRegistry) {
+	static AdviceFactory adviceFactory(final MetricRegistry metricRegistry, final NamingStrategy namingStrategy) {
 		return new AdviceFactory() {
 			@Override
 			public Advice getAdvice(Object bean, Class<?> targetClass) {
-				return new LegacyCountedMethodInterceptor(metricRegistry, targetClass);
+				return new LegacyCountedMethodInterceptor(metricRegistry, targetClass, namingStrategy);
 			}
 		};
 	}

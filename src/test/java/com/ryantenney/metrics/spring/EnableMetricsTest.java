@@ -15,18 +15,14 @@
  */
 package com.ryantenney.metrics.spring;
 
-import static com.ryantenney.metrics.spring.TestUtil.forCachedGaugeMethod;
-import static com.ryantenney.metrics.spring.TestUtil.forCountedMethod;
-import static com.ryantenney.metrics.spring.TestUtil.forExceptionMeteredMethod;
-import static com.ryantenney.metrics.spring.TestUtil.forGaugeField;
-import static com.ryantenney.metrics.spring.TestUtil.forGaugeMethod;
-import static com.ryantenney.metrics.spring.TestUtil.forMeteredMethod;
-import static com.ryantenney.metrics.spring.TestUtil.forTimedMethod;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-
+import com.codahale.metrics.*;
+import com.codahale.metrics.annotation.Counted;
+import com.codahale.metrics.annotation.ExceptionMetered;
+import com.codahale.metrics.annotation.Metered;
+import com.codahale.metrics.annotation.Timed;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.ryantenney.metrics.spring.config.annotation.EnableMetrics;
+import com.ryantenney.metrics.spring.config.annotation.MetricsConfigurer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,19 +31,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.codahale.metrics.CachedGauge;
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.codahale.metrics.annotation.Counted;
-import com.codahale.metrics.annotation.ExceptionMetered;
-import com.codahale.metrics.annotation.Metered;
-import com.codahale.metrics.annotation.Timed;
-import com.codahale.metrics.health.HealthCheckRegistry;
-import com.ryantenney.metrics.spring.config.annotation.EnableMetrics;
-import com.ryantenney.metrics.spring.config.annotation.MetricsConfigurer;
+import static com.ryantenney.metrics.spring.TestUtil.*;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
 
 /**
  * Tests use of {@link EnableMetrics @EnableMetrics} on {@code @Configuration} classes.
@@ -61,6 +47,7 @@ public class EnableMetricsTest {
 	private static AnnotationConfigApplicationContext applicationContext;
 	private static MetricRegistry metricRegistry;
 	private static HealthCheckRegistry healthCheckRegistry;
+	private static NamingStrategy namingStrategy;
 	private static TestBean testBean;
 
 	@BeforeClass
@@ -68,6 +55,7 @@ public class EnableMetricsTest {
 		metricRegistry = new MetricRegistry();
 		metricRegistry.addListener(new LoggingMetricRegistryListener());
 
+		namingStrategy = new DefaultNamingStrategy();
 		healthCheckRegistry = new HealthCheckRegistry();
 
 		applicationContext = new AnnotationConfigApplicationContext(MetricsConfig.class);
@@ -193,6 +181,11 @@ public class EnableMetricsTest {
 		@Override
 		public HealthCheckRegistry getHealthCheckRegistry() {
 			return healthCheckRegistry;
+		}
+
+		@Override
+		public NamingStrategy getNamingStrategy() {
+			return namingStrategy;
 		}
 
 		@Override

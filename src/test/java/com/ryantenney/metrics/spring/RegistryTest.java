@@ -31,6 +31,7 @@ public class RegistryTest {
 			ctx = new ClassPathXmlApplicationContext("classpath:default-registries.xml");
 			Assert.assertNotNull("Should have a MetricRegistry bean.", ctx.getBean(MetricRegistry.class));
 			Assert.assertNotNull("Should have a HealthCheckRegistry bean.", ctx.getBean(HealthCheckRegistry.class));
+			Assert.assertNotNull("Should have a NameStrategy bean.", ctx.getBean(NamingStrategy.class));
 		}
 		finally {
 			if (ctx != null) {
@@ -46,6 +47,7 @@ public class RegistryTest {
 			ctx = new ClassPathXmlApplicationContext("classpath:supplied-registries.xml");
 			Assert.assertNotNull("Should have a MetricRegistry bean.", ctx.getBean("metrics", MetricRegistry.class));
 			Assert.assertNotNull("Should have a HealthCheckRegistry bean.", ctx.getBean("health", HealthCheckRegistry.class));
+			Assert.assertNotNull("Should have a NamingStrategy bean.", ctx.getBean("namingStrategy", NamingStrategy.class));
 		}
 		finally {
 			if (ctx != null) {
@@ -63,6 +65,8 @@ public class RegistryTest {
 					.getSuperclass());
 			Assert.assertSame("Should have a custom HealthCheckRegistry bean.", HealthCheckRegistry.class, ctx.getBean("health", HealthCheckRegistry.class)
 					.getClass().getSuperclass());
+			Assert.assertSame("Should have a custom NameStrategy bean.", DefaultNamingStrategy.class, ctx.getBean("namingStrategy", NamingStrategy.class)
+					.getClass().getSuperclass());
 		}
 		finally {
 			if (ctx != null) {
@@ -75,4 +79,5 @@ public class RegistryTest {
 
 	public static class CustomHealthCheckRegistry extends HealthCheckRegistry {}
 
+	public static class CustomNamingStrategy extends DefaultNamingStrategy {}
 }

@@ -17,11 +17,10 @@ package com.ryantenney.metrics.spring;
 
 import java.lang.reflect.Method;
 
-import org.springframework.core.Ordered;
-import org.springframework.util.ReflectionUtils;
-
 import com.codahale.metrics.MetricRegistry;
 import com.ryantenney.metrics.annotation.CachedGauge;
+import org.springframework.core.Ordered;
+import org.springframework.util.ReflectionUtils;
 
 import static com.ryantenney.metrics.spring.AnnotationFilter.INSTANCE_METHODS;
 
@@ -32,8 +31,8 @@ class LegacyCachedGaugeAnnotationBeanPostProcessor extends AbstractAnnotationBea
 
 	private final MetricRegistry metrics;
 
-	public LegacyCachedGaugeAnnotationBeanPostProcessor(final MetricRegistry metrics) {
-		super(Members.METHODS, Phase.POST_INIT, FILTER);
+	public LegacyCachedGaugeAnnotationBeanPostProcessor(final MetricRegistry metrics, NamingStrategy namingStrategy) {
+		super(Members.METHODS, Phase.POST_INIT, FILTER, namingStrategy);
 		this.metrics = metrics;
 	}
 
@@ -44,7 +43,7 @@ class LegacyCachedGaugeAnnotationBeanPostProcessor extends AbstractAnnotationBea
 		}
 
 		final CachedGauge annotation = method.getAnnotation(CachedGauge.class);
-		final String metricName = Util.forCachedGauge(targetClass, method, annotation);
+		final String metricName = buildMetricName(targetClass, method, annotation);
 
 		metrics.register(metricName, new com.codahale.metrics.CachedGauge<Object>(annotation.timeout(), annotation.timeoutUnit()) {
 			@Override

@@ -15,7 +15,9 @@
  */
 package com.ryantenney.metrics.spring;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 import org.slf4j.Logger;
@@ -43,11 +45,16 @@ abstract class AbstractAnnotationBeanPostProcessor implements BeanPostProcessor 
 	private final Members members;
 	private final Phase phase;
 	private final AnnotationFilter filter;
+	private final NamingStrategy namingStrategy;
 
-	public AbstractAnnotationBeanPostProcessor(final Members members, final Phase phase, final AnnotationFilter filter) {
+	public AbstractAnnotationBeanPostProcessor(final Members members,
+			final Phase phase,
+			final AnnotationFilter filter,
+			NamingStrategy namingStrategy) {
 		this.members = members;
 		this.phase = phase;
 		this.filter = filter;
+		this.namingStrategy = namingStrategy;
 	}
 
 	/**
@@ -82,6 +89,10 @@ abstract class AbstractAnnotationBeanPostProcessor implements BeanPostProcessor 
 		}
 
 		return bean;
+	}
+
+	protected String buildMetricName(Class<?> targetClass, Member method, Annotation annotation) {
+		return namingStrategy.getName(targetClass, method, annotation);
 	}
 
 	private void process(final Object bean, final String beanName) {

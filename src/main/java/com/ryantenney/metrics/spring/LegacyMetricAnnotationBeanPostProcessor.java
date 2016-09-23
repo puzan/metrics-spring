@@ -17,15 +17,10 @@ package com.ryantenney.metrics.spring;
 
 import java.lang.reflect.Field;
 
+import com.codahale.metrics.*;
+import com.ryantenney.metrics.annotation.Metric;
 import org.springframework.core.Ordered;
 import org.springframework.util.ReflectionUtils;
-
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.ryantenney.metrics.annotation.Metric;
 
 import static com.ryantenney.metrics.spring.AnnotationFilter.INJECTABLE_FIELDS;
 
@@ -36,15 +31,15 @@ class LegacyMetricAnnotationBeanPostProcessor extends AbstractAnnotationBeanPost
 
 	private final MetricRegistry metrics;
 
-	public LegacyMetricAnnotationBeanPostProcessor(final MetricRegistry metrics) {
-		super(Members.FIELDS, Phase.PRE_INIT, FILTER);
+	public LegacyMetricAnnotationBeanPostProcessor(final MetricRegistry metrics, NamingStrategy namingStrategy) {
+		super(Members.FIELDS, Phase.PRE_INIT, FILTER, namingStrategy);
 		this.metrics = metrics;
 	}
 
 	@Override
 	protected void withField(Object bean, String beanName, Class<?> targetClass, Field field) {
 		final Metric annotation = field.getAnnotation(Metric.class);
-		final String metricName = Util.forMetricField(targetClass, field, annotation);
+		final String metricName = buildMetricName(targetClass, field, annotation);
 
 		final Class<?> type = field.getType();
 		if (!com.codahale.metrics.Metric.class.isAssignableFrom(type)) {

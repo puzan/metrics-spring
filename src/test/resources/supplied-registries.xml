@@ -28,7 +28,8 @@
 
 	<metrics:metric-registry id="metrics" />
 	<metrics:health-check-registry id="health" />
+	<metrics:naming-strategy id="namingStrategy" />
 
-	<metrics:annotation-driven metric-registry="metrics" health-check-registry="health" />
+	<metrics:annotation-driven metric-registry="metrics" health-check-registry="health" naming-strategy="namingStrategy"/>
 
 </beans>

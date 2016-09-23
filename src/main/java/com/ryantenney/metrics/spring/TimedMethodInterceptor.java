@@ -15,19 +15,16 @@
  */
 package com.ryantenney.metrics.spring;
 
-import java.lang.reflect.Method;
-
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.Timer.Context;
+import com.codahale.metrics.annotation.Timed;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
 import org.springframework.core.Ordered;
 import org.springframework.util.ReflectionUtils.MethodFilter;
-
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.codahale.metrics.Timer.Context;
-import com.codahale.metrics.annotation.Timed;
 
 import static com.ryantenney.metrics.spring.AnnotationFilter.PROXYABLE_METHODS;
 
@@ -37,8 +34,10 @@ class TimedMethodInterceptor extends AbstractMetricMethodInterceptor<Timed, Time
 	public static final Pointcut POINTCUT = new AnnotationMatchingPointcut(null, ANNOTATION);
 	public static final MethodFilter METHOD_FILTER = new AnnotationFilter(ANNOTATION, PROXYABLE_METHODS);
 
-	public TimedMethodInterceptor(final MetricRegistry metricRegistry, final Class<?> targetClass) {
-		super(metricRegistry, targetClass, ANNOTATION, METHOD_FILTER);
+	public TimedMethodInterceptor(final MetricRegistry metricRegistry,
+			final Class<?> targetClass,
+			NamingStrategy namingStrategy) {
+		super(metricRegistry, targetClass, ANNOTATION, METHOD_FILTER, namingStrategy);
 	}
 
 	@Override
@@ -58,20 +57,15 @@ class TimedMethodInterceptor extends AbstractMetricMethodInterceptor<Timed, Time
 	}
 
 	@Override
-	protected String buildMetricName(Class<?> targetClass, Method method, Timed annotation) {
-		return Util.forTimedMethod(targetClass, method, annotation);
-	}
-
-	@Override
 	public int getOrder() {
 		return HIGHEST_PRECEDENCE;
 	}
 
-	static AdviceFactory adviceFactory(final MetricRegistry metricRegistry) {
+	static AdviceFactory adviceFactory(final MetricRegistry metricRegistry, final NamingStrategy namingStrategy) {
 		return new AdviceFactory() {
 			@Override
 			public Advice getAdvice(Object bean, Class<?> targetClass) {
-				return new TimedMethodInterceptor(metricRegistry, targetClass);
+				return new TimedMethodInterceptor(metricRegistry, targetClass, namingStrategy);
 			}
 		};
 	}

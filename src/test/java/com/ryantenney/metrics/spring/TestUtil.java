@@ -21,67 +21,62 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.codahale.metrics.CachedGauge;
-import com.codahale.metrics.Counter;
+import com.codahale.metrics.*;
 import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.codahale.metrics.annotation.Counted;
-import com.codahale.metrics.annotation.ExceptionMetered;
+import com.codahale.metrics.annotation.*;
 import com.codahale.metrics.annotation.Metered;
 import com.codahale.metrics.annotation.Metric;
-import com.codahale.metrics.annotation.Timed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class TestUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(TestUtil.class);
 
+	private static final NamingStrategy NAMING_STRATEGY = new DefaultNamingStrategy();
+
 	static String forTimedMethod(Class<?> klass, Member member, Timed annotation) {
-		return Util.forTimedMethod(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	static String forMeteredMethod(Class<?> klass, Member member, Metered annotation) {
-		return Util.forMeteredMethod(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	static String forGauge(Class<?> klass, Member member, com.codahale.metrics.annotation.Gauge annotation) {
-		return Util.forGauge(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	static String forCachedGauge(Class<?> klass, Member member, com.codahale.metrics.annotation.CachedGauge annotation) {
-		return Util.forCachedGauge(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	static String forExceptionMeteredMethod(Class<?> klass, Member member, ExceptionMetered annotation) {
-		return Util.forExceptionMeteredMethod(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	static String forCountedMethod(Class<?> klass, Member member, Counted annotation) {
-		return Util.forCountedMethod(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	static String forMetricField(Class<?> klass, Member member, Metric annotation) {
-		return Util.forMetricField(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	@Deprecated
 	static String forLegacyCachedGauge(Class<?> klass, Member member, com.ryantenney.metrics.annotation.CachedGauge annotation) {
-		return Util.forCachedGauge(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	@Deprecated
 	static String forLegacyCountedMethod(Class<?> klass, Member member, com.ryantenney.metrics.annotation.Counted annotation) {
-		return Util.forCountedMethod(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	@Deprecated
 	static String forLegacyMetricField(Class<?> klass, Member member, com.ryantenney.metrics.annotation.Metric annotation) {
-		return Util.forMetricField(klass, member, annotation);
+		return NAMING_STRATEGY.getName(klass, member, annotation);
 	}
 
 	static Gauge<?> forGaugeField(MetricRegistry metricRegistry, Class<?> clazz, String fieldName) {

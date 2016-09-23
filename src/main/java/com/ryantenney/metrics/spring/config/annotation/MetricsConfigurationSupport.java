@@ -15,6 +15,8 @@
  */
 package com.ryantenney.metrics.spring.config.annotation;
 
+import com.ryantenney.metrics.spring.DefaultNamingStrategy;
+import com.ryantenney.metrics.spring.NamingStrategy;
 import org.springframework.aop.framework.ProxyConfig;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -61,49 +63,49 @@ public class MetricsConfigurationSupport implements ImportAware {
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor exceptionMeteredAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.exceptionMetered(getMetricRegistry(), proxyConfig);
+		return MetricsBeanPostProcessorFactory.exceptionMetered(getMetricRegistry(), proxyConfig, namingStrategy());
 	}
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor meteredAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.metered(getMetricRegistry(), proxyConfig);
+		return MetricsBeanPostProcessorFactory.metered(getMetricRegistry(), proxyConfig, namingStrategy());
 	}
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor timedAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.timed(getMetricRegistry(), proxyConfig);
+		return MetricsBeanPostProcessorFactory.timed(getMetricRegistry(), proxyConfig, namingStrategy());
 	}
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor countedAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.counted(getMetricRegistry(), proxyConfig);
+		return MetricsBeanPostProcessorFactory.counted(getMetricRegistry(), proxyConfig, namingStrategy());
 	}
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor gaugeFieldAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.gaugeField(getMetricRegistry());
+		return MetricsBeanPostProcessorFactory.gaugeField(getMetricRegistry(), namingStrategy());
 	}
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor gaugeMethodAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.gaugeMethod(getMetricRegistry());
+		return MetricsBeanPostProcessorFactory.gaugeMethod(getMetricRegistry(), namingStrategy());
 	}
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor cachedGaugeAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.cachedGauge(getMetricRegistry());
+		return MetricsBeanPostProcessorFactory.cachedGauge(getMetricRegistry(), namingStrategy());
 	}
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor metricAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.metric(getMetricRegistry());
+		return MetricsBeanPostProcessorFactory.metric(getMetricRegistry(), namingStrategy());
 	}
 
 	@Bean
@@ -116,21 +118,27 @@ public class MetricsConfigurationSupport implements ImportAware {
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor legacyCountedAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.legacyCounted(getMetricRegistry(), proxyConfig);
+		return MetricsBeanPostProcessorFactory.legacyCounted(getMetricRegistry(), proxyConfig, namingStrategy());
 	}
 
 	@Deprecated
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor legacyCachedGaugeAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.legacyCachedGauge(getMetricRegistry());
+		return MetricsBeanPostProcessorFactory.legacyCachedGauge(getMetricRegistry(), namingStrategy());
 	}
 
 	@Deprecated
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanPostProcessor legacyMetricAnnotationBeanPostProcessor() {
-		return MetricsBeanPostProcessorFactory.legacyMetric(getMetricRegistry());
+		return MetricsBeanPostProcessorFactory.legacyMetric(getMetricRegistry(), namingStrategy());
+	}
+
+	@Bean
+	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+	public NamingStrategy namingStrategy() {
+		return new DefaultNamingStrategy();
 	}
 
 	protected MetricRegistry getMetricRegistry() {

@@ -17,11 +17,10 @@ package com.ryantenney.metrics.spring;
 
 import java.lang.reflect.Method;
 
-import org.springframework.core.Ordered;
-import org.springframework.util.ReflectionUtils;
-
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.annotation.Gauge;
+import org.springframework.core.Ordered;
+import org.springframework.util.ReflectionUtils;
 
 import static com.ryantenney.metrics.spring.AnnotationFilter.INSTANCE_METHODS;
 
@@ -31,8 +30,8 @@ class GaugeMethodAnnotationBeanPostProcessor extends AbstractAnnotationBeanPostP
 
 	private final MetricRegistry metrics;
 
-	public GaugeMethodAnnotationBeanPostProcessor(final MetricRegistry metrics) {
-		super(Members.ALL, Phase.POST_INIT, FILTER);
+	public GaugeMethodAnnotationBeanPostProcessor(final MetricRegistry metrics, NamingStrategy namingStrategy) {
+		super(Members.ALL, Phase.POST_INIT, FILTER, namingStrategy);
 		this.metrics = metrics;
 	}
 
@@ -43,7 +42,7 @@ class GaugeMethodAnnotationBeanPostProcessor extends AbstractAnnotationBeanPostP
 		}
 
 		final Gauge annotation = method.getAnnotation(Gauge.class);
-		final String metricName = Util.forGauge(targetClass, method, annotation);
+		final String metricName = buildMetricName(targetClass, method, annotation);
 
 		metrics.register(metricName, new com.codahale.metrics.Gauge<Object>() {
 			@Override

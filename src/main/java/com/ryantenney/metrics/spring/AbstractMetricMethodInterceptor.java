@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.codahale.metrics.MetricRegistry;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
@@ -27,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.ReflectionUtils.MethodFilter;
-
-import com.codahale.metrics.MetricRegistry;
 
 abstract class AbstractMetricMethodInterceptor<A extends Annotation, M> implements MethodInterceptor, MethodCallback {
 
@@ -38,12 +37,14 @@ abstract class AbstractMetricMethodInterceptor<A extends Annotation, M> implemen
 	private final Class<?> targetClass;
 	private final Class<A> annotationClass;
 	private final Map<MethodKey, AnnotationMetricPair<A, M>> metrics;
+	private final NamingStrategy namingStrategy;
 
 	AbstractMetricMethodInterceptor(final MetricRegistry metricRegistry, final Class<?> targetClass, final Class<A> annotationClass,
-			final MethodFilter methodFilter) {
+			final MethodFilter methodFilter, NamingStrategy namingStrategy) {
 		this.metricRegistry = metricRegistry;
 		this.targetClass = targetClass;
 		this.annotationClass = annotationClass;
+		this.namingStrategy = namingStrategy;
 		this.metrics = new HashMap<MethodKey, AnnotationMetricPair<A, M>>();
 
 		LOG.debug("Creating method interceptor for class {}", targetClass.getCanonicalName());
@@ -81,7 +82,9 @@ abstract class AbstractMetricMethodInterceptor<A extends Annotation, M> implemen
 		}
 	}
 
-	protected abstract String buildMetricName(Class<?> targetClass, Method method, A annotation);
+	protected String buildMetricName(Class<?> targetClass, Method method, A annotation) {
+		return namingStrategy.getName(targetClass, method, annotation);
+	}
 
 	protected abstract M buildMetric(MetricRegistry metricRegistry, String metricName, A annotation);
 

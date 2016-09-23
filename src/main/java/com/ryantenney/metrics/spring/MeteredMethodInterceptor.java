@@ -15,17 +15,14 @@
  */
 package com.ryantenney.metrics.spring;
 
-import java.lang.reflect.Method;
-
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.annotation.Metered;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
 import org.springframework.util.ReflectionUtils.MethodFilter;
-
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.annotation.Metered;
 
 import static com.ryantenney.metrics.spring.AnnotationFilter.PROXYABLE_METHODS;
 
@@ -35,8 +32,10 @@ class MeteredMethodInterceptor extends AbstractMetricMethodInterceptor<Metered, 
 	public static final Pointcut POINTCUT = new AnnotationMatchingPointcut(null, ANNOTATION);
 	public static final MethodFilter METHOD_FILTER = new AnnotationFilter(ANNOTATION, PROXYABLE_METHODS);
 
-	public MeteredMethodInterceptor(final MetricRegistry metricRegistry, final Class<?> targetClass) {
-		super(metricRegistry, targetClass, ANNOTATION, METHOD_FILTER);
+	public MeteredMethodInterceptor(final MetricRegistry metricRegistry,
+			final Class<?> targetClass,
+			NamingStrategy namingStrategy) {
+		super(metricRegistry, targetClass, ANNOTATION, METHOD_FILTER, namingStrategy);
 	}
 
 	@Override
@@ -50,16 +49,11 @@ class MeteredMethodInterceptor extends AbstractMetricMethodInterceptor<Metered, 
 		return metricRegistry.meter(metricName);
 	}
 
-	@Override
-	protected String buildMetricName(Class<?> targetClass, Method method, Metered annotation) {
-		return Util.forMeteredMethod(targetClass, method, annotation);
-	}
-
-	static AdviceFactory adviceFactory(final MetricRegistry metricRegistry) {
+	static AdviceFactory adviceFactory(final MetricRegistry metricRegistry, final NamingStrategy namingStrategy) {
 		return new AdviceFactory() {
 			@Override
 			public Advice getAdvice(Object bean, Class<?> targetClass) {
-				return new MeteredMethodInterceptor(metricRegistry, targetClass);
+				return new MeteredMethodInterceptor(metricRegistry, targetClass, namingStrategy);
 			}
 		};
 	}
